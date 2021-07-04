@@ -1,9 +1,12 @@
 package utilidades;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import anotaciones.Id;
 
 public class UBean {
 	
@@ -16,8 +19,7 @@ public class UBean {
 		return fields;
 	}
 
-	public static boolean ejecutarSet(Object o, String att, Object valor) {
-		boolean result = false;
+	public static void ejecutarSet(Object o, String att, Object valor) {
 		Class reflector = o.getClass();
 		String setterName = "set".concat(String.valueOf(att.charAt(0)).toUpperCase().concat(att.substring(1)));
 		for(Method m: reflector.getDeclaredMethods()) {
@@ -31,7 +33,6 @@ public class UBean {
 				}
 			}
 		}
-		return result;
 	}
 	
 	public static Object ejecutarGet(Object o, String att) {
@@ -48,5 +49,37 @@ public class UBean {
 			}
 		}
 		return result;
+	}
+	
+	public static Object obtenerInstancia(Class c) {
+		Object instancia = null;
+		try {
+			Constructor[] constructores = c.getConstructors();
+			for(Constructor con : constructores) {
+				if(con.getParameterCount() == 0) {
+					instancia = con.newInstance();
+					break;
+				}
+			}
+		} catch (InstantiationException 
+				| IllegalAccessException 
+				| IllegalArgumentException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return instancia;
+	}
+	
+	public static Field obtenerIdField(Class c) {
+		Field[] fields = c.getDeclaredFields();
+		Field idField = null;
+		for(Field field : fields) {
+			Id id = field.getAnnotation(Id.class);
+			if(id != null) {
+				idField = field;
+				break;
+			}
+		}
+		return idField;
 	}
 }
